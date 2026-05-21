@@ -1,4 +1,658 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
 
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
+  <title>Log exportações</title>
 
+  <style>
 
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:"Segoe UI", sans-serif;
+    }
+
+    body{
+      background:#f4f6f9;
+      color:#2c3e50;
+    }
+
+    /* =========================================
+       MENU LATERAL
+    ========================================= */
+
+    .sidebar{
+      width:240px;
+      height:100vh;
+      background:#1f2937;
+      position:fixed;
+      top:0;
+      left:0;
+    }
+
+    .logo{
+      height:70px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:22px;
+      font-weight:600;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .menu{
+      list-style:none;
+      margin-top:20px;
+    }
+
+    .menu li{
+      padding:16px 24px;
+      color:#d1d5db;
+      cursor:pointer;
+      transition:.2s;
+      font-size:15px;
+    }
+
+    .menu li:hover{
+      background:#374151;
+    }
+
+    .menu .active{
+      background:#0ea5e9;
+      color:#fff;
+      font-weight:600;
+    }
+
+    /* =========================================
+       CONTEÚDO
+    ========================================= */
+
+    .content{
+      margin-left:240px;
+      padding:30px;
+    }
+
+    .breadcrumb{
+      font-size:14px;
+      color:#6b7280;
+      margin-bottom:10px;
+    }
+
+    .page-title{
+      font-size:28px;
+      font-weight:600;
+      margin-bottom:25px;
+    }
+
+    /* =========================================
+       CARD
+    ========================================= */
+
+    .card{
+      background:#fff;
+      border-radius:10px;
+      padding:24px;
+      box-shadow:0 2px 8px rgba(0,0,0,.05);
+      margin-bottom:25px;
+    }
+
+    /* =========================================
+       FILTROS
+    ========================================= */
+
+    .filters{
+      display:flex;
+      gap:20px;
+      flex-wrap:wrap;
+      align-items:end;
+    }
+
+    .form-group{
+      display:flex;
+      flex-direction:column;
+      min-width:260px;
+    }
+
+    .form-group label{
+      margin-bottom:8px;
+      font-size:14px;
+      color:#6b7280;
+    }
+
+    .form-group input{
+      height:42px;
+      border:1px solid #d1d5db;
+      border-radius:6px;
+      padding:0 12px;
+      font-size:14px;
+      outline:none;
+    }
+
+    .form-group input:focus{
+      border-color:#0ea5e9;
+    }
+
+    .btn{
+      height:42px;
+      padding:0 24px;
+      border:none;
+      border-radius:6px;
+      background:#0ea5e9;
+      color:#fff;
+      cursor:pointer;
+      font-weight:600;
+      transition:.2s;
+    }
+
+    .btn:hover{
+      background:#0284c7;
+    }
+
+    /* =========================================
+       TABELA
+    ========================================= */
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+    }
+
+    thead{
+      background:#f9fafb;
+    }
+
+    th{
+      text-align:left;
+      padding:14px;
+      font-size:14px;
+      color:#6b7280;
+      border-bottom:1px solid #e5e7eb;
+    }
+
+    td{
+      padding:16px 14px;
+      border-bottom:1px solid #edf0f2;
+      font-size:14px;
+      vertical-align:middle;
+    }
+
+    tbody tr:hover{
+      background:#fafafa;
+    }
+
+    /* =========================================
+       STATUS
+    ========================================= */
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 12px;
+      border-radius:30px;
+      font-size:12px;
+      font-weight:600;
+    }
+
+    .success{
+      background:#dcfce7;
+      color:#166534;
+    }
+
+    .warning{
+      background:#fef3c7;
+      color:#92400e;
+    }
+
+    .danger{
+      background:#fee2e2;
+      color:#991b1b;
+    }
+
+    /* =========================================
+       AÇÕES
+    ========================================= */
+
+    .actions{
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:8px;
+    }
+
+    .btn-details{
+      background:#0ea5e9;
+      color:#fff;
+      border:none;
+      border-radius:6px;
+      padding:8px 14px;
+      cursor:pointer;
+      font-size:13px;
+      font-weight:600;
+      transition:.2s;
+    }
+
+    .btn-details:hover{
+      background:#0284c7;
+    }
+
+    .btn-icon{
+      width:34px;
+      height:34px;
+      border:none;
+      border-radius:6px;
+      background:#f59e0b;
+      color:#fff;
+      cursor:pointer;
+      font-size:18px;
+      font-weight:bold;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:.3s;
+    }
+
+    .btn-icon:hover{
+      background:#d97706;
+      transform:rotate(180deg);
+    }
+
+    /* =========================================
+       MODAL
+    ========================================= */
+
+    .modal{
+      display:none;
+      position:fixed;
+      z-index:999;
+      left:0;
+      top:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,.45);
+    }
+
+    .modal-content{
+      background:#fff;
+      width:85%;
+      max-width:1200px;
+      margin:40px auto;
+      border-radius:10px;
+      overflow:hidden;
+      animation:fade .2s ease;
+    }
+
+    @keyframes fade{
+
+      from{
+        transform:translateY(-10px);
+        opacity:0;
+      }
+
+      to{
+        transform:translateY(0);
+        opacity:1;
+      }
+    }
+
+    .modal-header{
+      background:#0ea5e9;
+      color:#fff;
+      padding:18px 24px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .modal-header h2{
+      font-size:20px;
+    }
+
+    .close{
+      font-size:30px;
+      cursor:pointer;
+    }
+
+    .modal-body{
+      padding:24px;
+      max-height:70vh;
+      overflow:auto;
+    }
+
+    .details-table th{
+      background:#f8fafc;
+    }
+
+    /* =========================================
+       RESPONSIVO
+    ========================================= */
+
+    @media(max-width:900px){
+
+      .sidebar{
+        width:100%;
+        height:auto;
+        position:relative;
+      }
+
+      .content{
+        margin-left:0;
+      }
+
+      .filters{
+        flex-direction:column;
+      }
+
+      .form-group{
+        width:100%;
+      }
+
+      .modal-content{
+        width:95%;
+      }
+
+      .actions{
+        flex-direction:row;
+      }
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <!-- MENU -->
+  <aside class="sidebar">
+
+    <div class="logo">
+      Inovamobil
+    </div>
+
+    <ul class="menu">
+      <li>Início</li>
+      <li>Cadastros</li>
+      <li>Relatórios</li>
+      <li>Protesto</li>
+      <li class="active">
+        Log exportações
+      </li>
+    </ul>
+
+  </aside>
+
+  <!-- CONTEÚDO -->
+  <main class="content">
+
+    <div class="breadcrumb">
+      Protesto > Log exportações
+    </div>
+
+    <div class="page-title">
+      Log exportações
+    </div>
+
+    <!-- FILTROS -->
+    <div class="card">
+
+      <div class="filters">
+
+        <div class="form-group">
+          <label>Data de geração inicial</label>
+          <input type="date">
+        </div>
+
+        <div class="form-group">
+          <label>Data de geração final</label>
+          <input type="date">
+        </div>
+
+        <button class="btn">
+          Filtrar
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- TABELA -->
+    <div class="card">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Data geração</th>
+            <th>Arquivo</th>
+            <th>Situação</th>
+            <th>Motivo rejeição</th>
+            <th style="width:170px;">Detalhes</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <!-- REGISTRO 1 -->
+          <tr>
+
+            <td>20/05/2026 08:15</td>
+
+            <td>
+              protesto_20260520_001.txt
+            </td>
+
+            <td>
+              <span class="status success">
+                Processado
+              </span>
+            </td>
+
+            <td>-</td>
+
+            <td>
+
+              <div class="actions">
+
+                <button class="btn-details" onclick="openModal()">
+                  Visualizar
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+          <!-- REGISTRO 2 -->
+          <tr>
+
+            <td>19/05/2026 14:20</td>
+
+            <td>
+              protesto_20260519_002.txt
+            </td>
+
+            <td>
+              <span class="status warning">
+                Processando
+              </span>
+            </td>
+
+            <td>-</td>
+
+            <td>
+
+              <div class="actions">
+
+                <button class="btn-details" onclick="openModal()">
+                  Visualizar
+                </button>
+
+                <button class="btn-icon" title="Sincronizar">
+                  ⟳
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+          <!-- REGISTRO 3 -->
+          <tr>
+
+            <td>18/05/2026 09:41</td>
+
+            <td>
+              protesto_20260518_003.txt
+            </td>
+
+            <td>
+              <span class="status danger">
+                Rejeitado
+              </span>
+            </td>
+
+            <td>
+              Arquivo rejeitado pelo cartório
+            </td>
+
+            <td>
+
+              <div class="actions">
+
+                <button class="btn-details" onclick="openModal()">
+                  Visualizar
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL DETALHES -->
+  <div class="modal" id="detailsModal">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h2>
+          Detalhes da exportação
+        </h2>
+
+        <span class="close" onclick="closeModal()">
+          &times;
+        </span>
+
+      </div>
+
+      <div class="modal-body">
+
+        <table class="details-table">
+
+          <thead>
+            <tr>
+              <th>Ligação</th>
+              <th>Responsável</th>
+              <th>Referência</th>
+              <th>Valor</th>
+              <th>Status envio</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr>
+
+              <td>303903-0</td>
+              <td>ADRIANA DOS SANTOS</td>
+              <td>10/2025</td>
+              <td>R$ 101,36</td>
+
+              <td>
+                <span class="status success">
+                  Enviado com sucesso
+                </span>
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td>303903-0</td>
+              <td>ADRIANA DOS SANTOS</td>
+              <td>09/2025</td>
+              <td>R$ 147,00</td>
+
+              <td>
+                <span class="status warning">
+                  Pendente confirmação
+                </span>
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td>301456-0</td>
+              <td>ABELARDO ALVES XIMENES</td>
+              <td>11/2025</td>
+              <td>R$ 2,02</td>
+
+              <td>
+                <span class="status danger">
+                  Rejeitado
+                </span>
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    function openModal(){
+      document.getElementById('detailsModal').style.display = 'block';
+    }
+
+    function closeModal(){
+      document.getElementById('detailsModal').style.display = 'none';
+    }
+
+    window.onclick = function(event){
+
+      const modal = document.getElementById('detailsModal');
+
+      if(event.target == modal){
+        modal.style.display = "none";
+      }
+    }
+
+  </script>
+
+</body>
+
+</html>
